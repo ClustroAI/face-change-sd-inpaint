@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 import torchvision.transforms as transforms 
 
-from diffusers import StableDiffusionInpaintPipeline, DPMSolverMultistepScheduler
+from diffusers import StableDiffusionInpaintPipeline, DPMSolverMultistepScheduler, AutoencoderKL
 from transformers import SegformerImageProcessor, AutoModelForSemanticSegmentation
 
 torch.backends.cuda.matmul.allow_tf32 = True
@@ -15,13 +15,19 @@ torch.backends.cuda.matmul.allow_tf32 = True
 pipe = StableDiffusionInpaintPipeline.from_pretrained(
         pretrained_model_name_or_path="runwayml/stable-diffusion-inpainting",
         torch_dtype=torch.float16
-    ).to("cuda")
+        )
+vae = AutoencoderKL.from_pretrained("stabilityai/sd-vae-ft-mse",
+                                    use_safetensors=True,
+                                    torch_dtype=torch.float16
+                                    )
 
+pipe.vae = vae
 pipe.enable_xformers_memory_efficient_attention()
 #pipe.vae.enable_tiling()
 pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config, use_karras_sigmas=True)
 pipe.scheduler.config.algorithm_type = 'sde-dpmsolver++'
 pipe.safety_checker = None
+pipe.to("cuda")
 
 # clothes segmentation
 processor = SegformerImageProcessor.from_pretrained("mattmdjaga/segformer_b2_clothes")
