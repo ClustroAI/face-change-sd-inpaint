@@ -95,11 +95,18 @@ def invoke(input_text):
     mask_image = face_segmentation(image)
 
     prompt = input_json['prompt']
-    negative_prompt = input_json['negative_prompt'] if 'negative_prompt' in input_json else ""
+    prompt = f'{prompt}, (portrait), (best quality:1.4), (ultra highres:1.2), (photorealistic:1.4), (soft focus:1.4)'
+    if 'negative_prompt' in input_json:
+        negative_prompt = input_json['negative_prompt']
+    else:
+        negative_prompt = '''poorly rendered face, poorly rendered eyes, deformed face, deformed eyelid, 
+                            collapsed eyeshadow, multiple eyebrows,inaccurate eyes, showing teeth, long neck, 
+                            (cross eye), bad proportions, gross proportions,(ugly face),mask,out of frame, closed eyes
+                            '''
     
     strength = float(input_json['strength']) if 'strength' in input_json else 1.0
-    num_inference_steps = int(input_json['steps']) if 'steps' in input_json else 25
-    guidance_scale = float(input_json['guidance_scale']) if 'guidance_scale' in input_json else 7.5
+    num_inference_steps = int(input_json['steps']) if 'steps' in input_json else 30
+    guidance_scale = float(input_json['guidance_scale']) if 'guidance_scale' in input_json else 6.5
     width, height = image.size
 
     result = pipe(
