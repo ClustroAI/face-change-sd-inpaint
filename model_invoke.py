@@ -1,6 +1,6 @@
 import json
 import requests
-from PIL import Image
+from PIL import Image, ImageFilter
 
 import torch
 import torch.nn as nn
@@ -66,11 +66,25 @@ def face_segmentation(image):
         align_corners=False,
     )
 
+    ''' 
+    Labels: 0: "Background", 1: "Hat", 2: "Hair", 3: "Sunglasses", 4: "Upper-clothes",
+            5: "Skirt", 6: "Pants", 7: "Dress", 8: "Belt", 9: "Left-shoe", 10: "Right-shoe", 
+            11: "Face", 12: "Left-leg", 13: "Right-leg", 14: "Left-arm", 15: "Right-arm", 
+            16: "Bag", 17: "Scarf"
+    '''
     pred_seg = upsampled_logits.argmax(dim=1)[0]
-    # 2 = hair, 11 = face
-    mask = (pred_seg == 1) + (pred_seg == 2) + (pred_seg == 3) + (pred_seg == 11)
+    mask = (pred_seg == 11)
     transform = transforms.ToPILImage()
     mask = transform(mask * 1.0)
+
+    # add mask blur
+    mask = mask.filter(ImageFilter.GaussianBlur(radius = 15))
+    pixel_map = mask.load()
+    w,h = mask.size
+    for i in range(w):
+        for j in range(h):
+            pixel_map[i,j] = 0 if pixel_map[i,j] < 110 else 255
+            
     return mask
 
 def invoke(input_text):
