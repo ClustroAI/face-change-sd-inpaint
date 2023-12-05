@@ -14,12 +14,15 @@ torch.backends.cuda.matmul.allow_tf32 = True
 # SD inpainting
 pipe = StableDiffusionInpaintPipeline.from_pretrained(
         pretrained_model_name_or_path="runwayml/stable-diffusion-inpainting",
-        torch_dtype=torch.float16
-        )
-vae = AutoencoderKL.from_pretrained("stabilityai/sd-vae-ft-mse",
-                                    use_safetensors=True,
-                                    torch_dtype=torch.float16
-                                    )
+        dtype=torch.float16,
+        revision="51388a731f57604945fddd703ecb5c50e8e7b49d"
+)
+vae = AutoencoderKL.from_pretrained(
+        "stabilityai/sd-vae-ft-mse",
+        use_safetensors=True,
+        dtype=torch.float16,
+        revision="31f26fdeee1355a5c34592e401dd41e45d25a493"
+)
 
 pipe.vae = vae
 pipe.enable_xformers_memory_efficient_attention()
@@ -30,8 +33,14 @@ pipe.safety_checker = None
 pipe.to("cuda")
 
 # clothes segmentation
-processor = SegformerImageProcessor.from_pretrained("mattmdjaga/segformer_b2_clothes")
-model = AutoModelForSemanticSegmentation.from_pretrained("mattmdjaga/segformer_b2_clothes").to("cuda")
+processor = SegformerImageProcessor.from_pretrained(
+        "mattmdjaga/segformer_b2_clothes",
+        revision="48531bf3850b68f1fa8b88ae73bfec09f696a82f"
+)
+model = AutoModelForSemanticSegmentation.from_pretrained(
+        "mattmdjaga/segformer_b2_clothes",
+        revision="48531bf3850b68f1fa8b88ae73bfec09f696a82f"
+).to("cuda")
 
 def scale_image(img, max_size=1500):
     # Open the image
