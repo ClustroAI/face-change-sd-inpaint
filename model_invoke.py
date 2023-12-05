@@ -20,13 +20,13 @@ pipe = StableDiffusionInpaintPipeline.from_pretrained(
 vae = AutoencoderKL.from_pretrained(
         "stabilityai/sd-vae-ft-mse",
         use_safetensors=True,
-        dtype=torch.float16,
+        torch_dtype=torch.float16,
         revision="31f26fdeee1355a5c34592e401dd41e45d25a493"
 )
 
 pipe.vae = vae
-pipe.enable_xformers_memory_efficient_attention()
-#pipe.vae.enable_tiling()
+# pipe.enable_xformers_memory_efficient_attention()
+# pipe.vae.enable_tiling()
 pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config, use_karras_sigmas=True)
 pipe.scheduler.config.algorithm_type = 'sde-dpmsolver++'
 pipe.safety_checker = None
